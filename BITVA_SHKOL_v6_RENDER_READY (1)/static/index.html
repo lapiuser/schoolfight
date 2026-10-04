@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7f3ed">
+<title>БИТВА ШКОЛ</title>
+<link rel="stylesheet" href="/static/app.css?v=8">
+</head>
+<body>
+<section id="selectionView" class="view selection-view">
+  <div class="selection-shell">
+    <header class="brand-block">
+      <div class="brand-mark-large">Б</div>
+      <div><div class="eyebrow">РОССИЯ · LIVE RANKING</div><h1>БИТВА ШКОЛ</h1><p>Выбери город и учебное учреждение, чтобы начать.</p></div>
+    </header>
+    <div class="chooser-card">
+      <div class="chooser-grid">
+        <div class="chooser-step"><span class="step-number">1</span><label>Город</label><div class="autocomplete"><input id="city-input" placeholder="Например, Калининград" autocomplete="off" inputmode="search"><div id="city-suggest" class="suggestions"></div></div></div>
+        <div class="chooser-step"><span class="step-number">2</span><label>Тип учреждения</label><select id="type-select" disabled><option value="">Сначала выбери город</option></select></div>
+        <div class="chooser-step chooser-step-wide"><span class="step-number">3</span><label>Учебное учреждение</label><div class="autocomplete"><input id="inst-input" placeholder="Начни вводить название" autocomplete="off" disabled><div id="inst-suggest" class="suggestions"></div></div></div>
+      </div>
+      <div id="selection-note" class="selection-note">Сначала выбери город</div>
+      <button id="rememberedSchoolBtn" class="remembered-button hidden"></button>
+    </div>
+    <div class="selection-footer"><span>Anton Ljungberg Production</span><button id="lang-btn-select" class="lang-button">RU</button></div>
+  </div>
+</section>
+
+<section id="schoolView" class="view school-view hidden">
+  <div class="backdrop"></div>
+  <header class="game-topbar">
+    <button id="changeSchoolBtn" class="glass-button" aria-label="Сменить учебное заведение">←</button>
+    <div class="game-brand"><span class="brand-mini">Б</span><div><strong>БИТВА ШКОЛ</strong><small id="categoryLabel">—</small></div></div>
+    <button id="aboutBtn" class="glass-button" aria-label="О проекте">i</button>
+  </header>
+
+  <main class="hero-wrap">
+    <div class="hero-card" id="heroClickArea">
+      <picture class="hero-picture"><source id="heroMobileSource" media="(max-width: 700px)"><img id="heroImage" alt="" decoding="async" fetchpriority="high"></picture>
+      <div class="hero-shade"></div>
+      <button id="upload-photo-btn" class="photo-add-btn">Добавить фото</button>
+      <div class="hero-copy"><span class="hero-kicker">ТВОЁ УЧЕБНОЕ ЗАВЕДЕНИЕ</span><h2 id="schoolName">—</h2><div class="counter-pill"><span>Твои клики</span><strong id="sessionClicks">0</strong></div></div>
+      <div id="floatLayer" class="float-layer"></div>
+      <div class="tap-status"><span>ТАПАЙ ПО ШКОЛЕ</span><strong id="tap-score">0</strong><small>очков</small></div>
+    </div>
+  </main>
+  <div class="school-meta"><span id="inst-flag">🇷🇺</span><span id="inst-city">—</span><span class="dot">·</span><span id="inst-type">—</span><span class="dot">·</span><span>Место <b id="inst-rank">—</b></span></div>
+
+  <section class="bottom-dock"><button id="leaderboardToggle" class="leader-dock" aria-expanded="false"><span class="leader-icon-wrap">♛</span><div class="leader-summary"><span>ЛИДЕР СЕЙЧАС</span><strong id="leaderName">—</strong><small><b id="leaderClicks">0</b> очков <i id="leaderDelta">+0 за обновление</i></small></div><div class="my-rank"><span>ТВОЯ ШКОЛА</span><strong id="myRank">—</strong></div><span class="chevron">⌃</span></button></section>
+
+  <aside id="leaderboardSheet" class="sheet" aria-hidden="true"><div class="sheet-backdrop" data-close="leaderboard"></div><div class="sheet-panel leaderboard-panel"><div class="sheet-head"><div><span class="sheet-kicker">ОБЩИЙ РЕЙТИНГ</span><h3>Кто сейчас впереди</h3><p id="leaderboardHint">Твоя школа будет подсвечена автоматически.</p></div><div class="sheet-actions"><button id="boardSwitch" class="small-action">Рейтинг</button><button class="close-button" data-close="leaderboard">×</button></div></div><div class="leaderboard-top-info"><div><span>№1</span><strong id="sheetLeaderName">—</strong><small><b id="sheetLeaderScore">0</b> очков</small></div><div class="my-sheet-rank"><span>ТВОЯ ШКОЛА</span><strong id="sheetMyRank">—</strong></div></div><div id="leaderboardList" class="leaderboard-list"></div></div></aside>
+
+  <aside id="aboutSheet" class="sheet" aria-hidden="true"><div class="sheet-backdrop" data-close="about"></div><div class="sheet-panel about-panel"><div class="sheet-head"><div><span class="sheet-kicker">БИТВА ШКОЛ</span><h3>О проекте</h3></div><button class="close-button" data-close="about">×</button></div><p class="about-text">БИТВА ШКОЛ — открытый рейтинг учебных учреждений России. Поддержка начисляется кликами, а рейтинг обновляется автоматически.</p><div class="stats-grid"><div class="stat-card"><span>Учебных учреждений</span><strong id="statSchools">0</strong></div><div class="stat-card"><span>Городов</span><strong id="statCities">0</strong></div><div class="stat-card"><span>Школ с кликами</span><strong id="statActiveSchools">0</strong></div><div class="stat-card"><span>Сейчас на сайте</span><strong id="statOnline">0</strong></div><div class="stat-card"><span>Посетителей</span><strong id="statVisits">0</strong></div><div class="stat-card"><span>Реальных кликов</span><strong id="statReal">0</strong></div></div><a id="supportBtn" class="primary-button" target="_blank" rel="noopener">Поддержать</a><a class="text-link" href="/legal" target="_blank">Политика и условия загрузки</a><div class="about-footer">Anton <a id="secret-admin-link" href="#">Ljungberg</a> Production</div></div></aside>
+</section>
+
+<div id="board-modal" class="modal hidden"><div class="modal-card board-card"><button class="close-button light" data-close-board>×</button><h2>Выбери рейтинг</h2><button class="board-option active" data-scope="schools">Топ школ мира</button><button class="board-option" data-scope="countries">Топ стран</button><button class="board-option" data-scope="cities">Топ городов мира</button><button class="board-option" data-scope="country_schools">Топ школ России</button><button class="board-option" data-scope="country_cities">Топ городов России</button><button class="board-option" data-scope="city_schools">Все учреждения города</button></div></div>
+
+<div id="photo-modal" class="modal hidden"><div class="modal-card"><button class="close-button light" id="photo-close">×</button><h2>Добавить фото учреждения</h2><p>Фото попадёт на ручную модерацию.</p><input id="photo-file" type="file" accept="image/jpeg,image/png,image/webp"><label class="consent"><input id="photo-consent" type="checkbox"><span>Я подтверждаю, что имею право передавать это изображение.</span></label><button id="photo-send" class="primary-button">Отправить</button><div id="photo-error" class="form-error"></div></div></div>
+<div id="toast" class="toast"></div><audio id="event-audio" preload="auto" loop></audio>
+<script src="/static/app.js?v=8"></script>
+</body></html>

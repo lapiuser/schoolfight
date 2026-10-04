@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>БИТВА ШКОЛ</title><link rel="stylesheet" href="/static/app.css?v=4"><script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer onload="window.turnstileLoaded=true;window.dispatchEvent(new Event('turnstile-ready'))"></script></head>
+<body class="gate-page">
+<main class="gate-shell"><section class="gate-card">
+<div class="brand-mark">БИТВА ШКОЛ</div>
+<h1>Рейтинг учебных учреждений России</h1>
+<p>Пройди проверку и поддержи своё учреждение</p>
+<div id="turnstile-wrap" class="turnstile-box"></div>
+<button id="enter-btn" class="primary-btn" disabled>Войти на сайт</button>
+<div id="gate-error" class="form-error"></div>
+<div class="gate-note">Проверка нужна для защиты рейтинга от автоматической накрутки</div>
+</section></main>
+<script>
+(async()=>{
+ const cfg=await fetch('/api/config',{cache:'no-store'}).then(r=>r.json()).catch(()=>({}));
+ const wrap=document.getElementById('turnstile-wrap');
+ const btn=document.getElementById('enter-btn');
+ const error=document.getElementById('gate-error');
+ let token='';
+ let rendered=false;
+ function showError(msg){error.textContent=msg;error.classList.add('show')}
+ function render(){
+   if(rendered)return;
+   if(!cfg.turnstile_enabled){btn.disabled=false;wrap.innerHTML='<div class="gate-local-note">Локальный режим: Cloudflare Turnstile отключён</div>';return;}
+   if(!window.turnstile){showError('Cloudflare Turnstile не загрузился. Проверь интернет, блокировщик рекламы или расширения браузера');return;}
+   if(!cfg.turnstile_site_key){showError('Не задан TURNSTILE_SITE_KEY');return;}
+   rendered=true;
+   try{
+     window.turnstile.render(wrap,{sitekey:cfg.turnstile_site_key,theme:'light',action:'enter',callback:t=>{token=t;btn.disabled=false;error.textContent=''},'expired-callback':()=>{token='';btn.disabled=true},'error-callback':()=>{token='';btn.disabled=true;showError('Cloudflare Turnstile недоступен. Отключи блокировщик рекламы или проверь соединение')}});
+   }catch(e){rendered=false;showError('Не удалось загрузить проверку Cloudflare')}
+ }
+ if(cfg.turnstile_enabled){
+   if(window.turnstile) render();
+   else window.addEventListener('turnstile-ready',render,{once:true});
+   setTimeout(()=>{if(!rendered&&!window.turnstile)showError('Cloudflare Turnstile не загрузился. Проверь интернет или блокировщик рекламы')},10000);
+ }else render();
+ btn.onclick=async()=>{
+   btn.disabled=true;error.textContent='';
+   try{const r=await fetch('/api/enter',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token})});if(!r.ok)throw 0;location.href='/app'}
+   catch{btn.disabled=false;showError('Проверка не пройдена')}
+ };
+})();
+</script></body></html>

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Служебный вход · БИТВА ШКОЛ</title><link rel="stylesheet" href="/static/app.css?v=6"><script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer onload="window.dispatchEvent(new Event('turnstile-ready'))"></script></head>
+<body class="gate-page"><main class="gate-shell"><section class="gate-card">
+<div class="brand-mark">БИТВА ШКОЛ</div><h1>Служебный вход</h1><p>Доступ только для администратора</p>
+<input id="login" class="admin-input" placeholder="Имя пользователя" autocomplete="username"><input id="password" class="admin-input" placeholder="Пароль" type="password" autocomplete="current-password">
+<div id="login-turnstile" class="turnstile-box"></div><div id="login-local-note" class="gate-local-note hidden">Дополнительная Cloudflare-проверка админ-входа отключена</div><button id="login-btn" class="primary-btn">Войти</button><div id="login-error" class="form-error"></div>
+<a class="text-link" href="/app">Вернуться</a>
+</section></main>
+<script>
+(async()=>{
+ const cfg=await fetch('/api/config').then(r=>r.json()).catch(()=>({}));let token='';
+ const b=document.getElementById('login-btn'),err=document.getElementById('login-error'),localNote=document.getElementById('login-local-note');
+ const needsTurnstile=cfg.admin_turnstile_required===true;
+ if(!needsTurnstile){
+   localNote.classList.remove('hidden');
+ } else {
+   const render=()=>{
+     if(!window.turnstile||!cfg.turnstile_site_key){err.textContent='Cloudflare Turnstile не загрузился';return;}
+     try{
+       window.turnstile.render('login-turnstile',{sitekey:cfg.turnstile_site_key,theme:'light',action:'admin_login',callback:t=>{token=t;err.textContent=''},'expired-callback':()=>{token=''},'error-callback':()=>{token='';err.textContent='Cloudflare Turnstile недоступен. Проверь соединение или блокировщик'}});
+     }catch(e){err.textContent='Не удалось запустить проверку Cloudflare'}
+   };
+   if(window.turnstile) render(); else {window.addEventListener('turnstile-ready',render,{once:true});setTimeout(()=>{if(!window.turnstile)err.textContent='Проверка Cloudflare не загрузилась'},9000)}
+ }
+ async function login(){
+   b.disabled=true;err.textContent='';
+   try{
+     const r=await fetch(location.pathname,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:document.getElementById('login').value,password:document.getElementById('password').value,token})});
+     const data=await r.json().catch(()=>({}));
+     if(!r.ok){if(r.status===429)throw Error('Слишком много попыток. Подожди минуту.');if(r.status===403)throw Error('Не пройдена Cloudflare-проверка.');throw Error(data.detail==='Неверные данные'?'Неверный логин или пароль':(data.detail||'Ошибка входа'))}
+     location.href='/admin'
+   }catch(e){err.textContent=e.message||'Ошибка входа';b.disabled=false}
+ }
+ b.onclick=login;document.getElementById('password').addEventListener('keydown',e=>{if(e.key==='Enter')login()});
+})();
+</script></body></html>

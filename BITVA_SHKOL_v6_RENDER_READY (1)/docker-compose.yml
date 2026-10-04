@@ -1,0 +1,62 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ksl
+      POSTGRES_USER: ksl
+      POSTGRES_PASSWORD: change-me
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      APP_ENV: production
+      DATABASE_URL: postgresql://ksl:change-me@db:5432/ksl
+      REDIS_URL: redis://redis:6379/0
+      MEDIA_BACKEND: filesystem
+      MEDIA_ROOT: /app/media
+      SECRET_KEY: change-me
+      ADMIN_USERNAME: change-me
+      ADMIN_PASSWORD: change-me
+      TURNSTILE_ENABLED: "true"
+      TURNSTILE_SITE_KEY: change-me
+      TURNSTILE_SECRET_KEY: change-me
+      TRUST_PROXY: "false"
+      RATE_LIMIT_SAME_POINT: "800"
+      RATE_LIMIT_IP_TOTAL: "1500"
+      PUBLIC_UPDATE_SECONDS: "3"
+      DONATION_URL: https://www.donationalerts.com/
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./media:/app/media
+    expose:
+      - "8000"
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./media:/app/media:ro
+      - ./certs:/etc/nginx/certs:ro
+
+volumes:
+  postgres_data:
+  redis_data:

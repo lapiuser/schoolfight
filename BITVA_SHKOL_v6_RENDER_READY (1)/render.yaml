@@ -1,0 +1,58 @@
+services:
+  - type: web
+    name: kaliningrad-school-leaderboard
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: MEDIA_BACKEND
+        value: db
+      - key: TURNSTILE_ENABLED
+        value: "true"
+      - key: ADMIN_TURNSTILE_ENABLED
+        value: "false"
+      - key: TURNSTILE_SITE_KEY
+        value: 1x00000000000000000000AA
+      - key: TURNSTILE_SECRET_KEY
+        value: 1x0000000000000000000000000000000AA
+      - key: TRUST_PROXY
+        value: "true"
+      - key: RATE_LIMIT_SAME_POINT
+        value: 800
+      - key: RATE_LIMIT_IP_TOTAL
+        value: 1500
+      - key: RATE_LIMIT_SESSION_TOTAL
+        value: 1500
+      - key: RATE_LIMIT_SESSION_SAME_POINT
+        value: 800
+      - key: MAX_BATCH_CLICKS
+        value: 60
+      - key: PUBLIC_UPDATE_SECONDS
+        value: 3
+      - key: SESSION_MINUTES
+        value: 30
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DONATION_URL
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kaliningrad-school-leaderboard-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: bitva-school-leaderboard-redis
+          type: keyvalue
+          property: connectionString
+
+databases:
+  - name: kaliningrad-school-leaderboard-db
+    plan: free
